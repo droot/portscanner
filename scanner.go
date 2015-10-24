@@ -38,10 +38,12 @@ func scanPorts(ip string, concurrencyLevel int) []uint16 {
   portRanges := partition(ports, concurrencyLevel)
 
   var wg sync.WaitGroup
+  // result slice with slot for each scan worker
   openPortResult := make([][]uint16, concurrencyLevel)
 
   wg.Add(concurrencyLevel)
   for ii := 0; ii < concurrencyLevel; ii++ {
+    // launch scan workers with their port ranges to scan
     go func(idx int, portRange []uint16) {
       var openPorts []uint16
       for _, p := range portRange {
@@ -56,6 +58,7 @@ func scanPorts(ip string, concurrencyLevel int) []uint16 {
   }
   wg.Wait()
 
+  // time to collect results
   var result []uint16
   for _, pp := range openPortResult {
     if len(pp) > 0 {
